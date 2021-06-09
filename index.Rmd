@@ -166,16 +166,14 @@ knitr::opts_chunk$set(cache = T)
 ## Talk outline
 
 1. Importance sampling to SMC
-
 2. Tuning delayed-acceptance in SMC
-
 3. Calibrating surrogate likelihoods in SMC
-
 4. Surrogate first annealing strategy
-
 5. Simulation results 
 
 Joint work with **Anthony Lee** (Bristol University) and **Christopher Drovandi** (QUT)
+
+Slides available here: https://bonstats.github.io/isba-da-smc/
 
 ---
 
@@ -638,12 +636,45 @@ knitr::include_graphics(paste0(pdfcvt,".png"), )
 ```
 
 ---
+class: list-space
 
 ## Example on Whittle Likelihood
 
 - The Whittle likelihood is a computationally efficient likelihood approximation for time series models ([Whittle 1953](https://doi.org/10.1007/BF02590998))
 
-- constructed using (discrete) Fourier transforms to the frequency domain
+--
+
+
+- Constructed using (discrete) Fourier transforms to the frequency domain
+
+--
+
+
+- $3.9\times$ to $5.8\times$ speed-up across the 10 simulations (80% interval)
+
+--
+
+
+- Reduced computation time from $\approx$ 20.5 hours to 4.5 hours
+
+---
+
+## Posterior Comparisons - Whittle
+
+```{r whittle-plot-post-comp, eval = T, echo = F, out.width='65%', }
+
+pdfcvt <- "plots/whittle-phi2-2020-09-06"
+
+cvt <- F
+
+if(cvt){
+  
+  pdftools::pdf_convert(pdf = paste0(pdfcvt,".pdf"), format = "png", dpi = 72*3,
+                        filenames = paste0(pdfcvt,".png"))
+}
+
+knitr::include_graphics(paste0(pdfcvt,".png"))
+```
 
 ---
 class: list-space
@@ -654,27 +685,24 @@ class: list-space
 
 - A generic framework for tuning mutation kernels in SMC
 
+    - Choosing optimal kernel tuning parameters and number of cycles
+    - Ensure sufficient particle diversification adaptively
 
 --
 
-- Uses of surrogate likelihoods used in SMC
+- Explored uses of surrogate likelihoods in SMC
 
     - Delayed-acceptance
     - Surrogate first annealing
 
 --
 
-- Surrogate likelihood calibration
+- Adaptively improves surrogate likelihoods
 
-
---
-
-- Current work: Whittle likelihood time series application 
-
-    - Using weighted annealing calibration
+    - With surrogate likelihood calibration
 
 ---
 class: middle, center
 
-# Thank you! (And questions)
+# Thank you for watching
 
