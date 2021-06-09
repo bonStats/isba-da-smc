@@ -3,7 +3,7 @@
   <head>
     <title>Accelerating sequential Monte Carlo with surrogate likelihoods</title>
     <meta charset="utf-8" />
-    <meta name="author" content="" />
+    <script src="libs/header-attrs-2.8/header-attrs.js"></script>
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
     <link href="libs/remark-css-0.0.1/hygge.css" rel="stylesheet" />
@@ -14,11 +14,18 @@
 class: center, middle, inverse, title-slide
 
 # Accelerating sequential Monte Carlo<br>with surrogate likelihoods
-## Joshua J Bon<br><br>MRC Biostatistics Unit<br><br>May 21 2020<br><br>
+## Joshua J Bon<br><br>ISBA 2021<br><br>
+### 
 ### Queensland University of Technology <br>ARC Centre of Excellence for Mathematical and Statistical Frontiers<br>QUT Centre for Data Science
 
 ---
 
+class: inverse, center, middle, hide-logo
+
+# How can a surrogate likelihood best be exploited for computational gains in SMC? 
+
+      
+---
 class: list-space
 
 &lt;style&gt;
@@ -36,10 +43,9 @@ padding: 0.25cm;
 
 
 
-
 ## Talk outline
 
-1. Overview: Computational Bayesian inference &amp; SMC
+1. Importance sampling to SMC
 
 2. Tuning delayed-acceptance in SMC
 
@@ -49,96 +55,7 @@ padding: 0.25cm;
 
 5. Simulation results 
 
-Joint work with **Christopher Drovandi** (QUT) and **Anthony Lee** (Bristol University)
-
----
-class: list-space
-
-# Overview
-
-- Statistical modelling informs decision making under **uncertainty**
-
-
-
-- We use data to ensure models are **good approximations** of reality
-
-
-
-- Fitting or training models with data uses sophisticated **algorithms**
-
-
-
-- Focus is on algorithms for Bayesian models: **Sequential Monte Carlo**
-
-
---
-&lt;br&gt;&lt;br&gt;
-**SMC:** 🎶 **Better. Faster. Stronger.** 🎶
-
-
----
-
-## Bayesian inference
-
-Bayesian statistical inference uses posterior distributions
-`$$p(\boldsymbol{\theta}~\vert~\boldsymbol{y}) = \frac{p(\boldsymbol{y}~\vert~\boldsymbol{\theta})p(\boldsymbol{\theta})}{p(\boldsymbol{y})}$$`
---
-
-.pull-left[
-The posterior is how we reason about:
-- uncertain parameters, `\(\boldsymbol{\theta}\)` 
-- observed data, `\(\boldsymbol{y}\)`
-]
-
---
-
-.pull-right[
-Informed by:
-- The prior `\(p(\boldsymbol{\theta})\)` for `\(\boldsymbol{\theta}\)`
-- The likelihood `\(p(\boldsymbol{y}~\vert~\boldsymbol{\theta})\)` for `\(\boldsymbol{y}\)`
-]
-
---
-
-.full-width[.content-box-red[
-`$$p(\boldsymbol{y}) = \int_{\Theta}p(\boldsymbol{y}~\vert~\boldsymbol{\theta})p(\boldsymbol{\theta}) \text{d}\boldsymbol{\theta}$$`
-
-- Intractable normalising constant
-- High dimensional integrals are difficult to solve analytically! 
-
-]]
-
----
-
-## Computational Bayesian inference
-
-In practice we only require posterior distribution summaries 
-`$$\mathbb{E}_{p}[f(\boldsymbol{\theta})] = \int_{\Theta}f(\boldsymbol{\theta})p(\boldsymbol{\theta}~\vert~\boldsymbol{y})\text{d}\boldsymbol{\theta}$$`
-
---
-
-- Exact simulation
-
-    - Direct simulation
-    - Rejection sampling
-    
---
-
-- Markov chain Monte Carlo (MCMC)
-
-    - Markov chain with invariant distribution equal to posterior
-
---
-
-- Importance sampling (IS)
-
-    - Construct weighted samples to approximate posterior
-
---
-
-- Sequential Monte Carlo (SMC)
-
-    - Iterative importance sampling + 🌶
+Joint work with **Anthony Lee** (Bristol University) and **Christopher Drovandi** (QUT)
 
 ---
 
@@ -187,6 +104,7 @@ Self-normalise to avoid computing the constant: `$$w_{i} = \frac{W_{i}}{\sum_{i=
 
 ---
 
+
 ## Sequential Monte Carlo
 
 Hard to develop an importance distribution `\(g(\boldsymbol{\theta})\)`! 
@@ -230,7 +148,7 @@ To avoid particle degeneracy, after reweighting:
 
 .full-width[.content-box-red[
 🌶 **Refresh**: Mutate samples to avoid degeneracy in particles
-- Often use MCMC kernels
+- Most often with MCMC kernels
 ]]
     
 ---
@@ -242,12 +160,13 @@ Example SMC algorithm: Resample-move for static models
 ---
 class: inverse, center, middle, hide-logo
 
-## Delayed-acceptance
+## Delayed-acceptance vs Metropolis-Hastings
 
+## (David vs Goliath)
 
 ---
 class: list-space
-## Background: Delayed-acceptance
+## Background: Metropolis-Hastings
 
 One option for the refresh (mutation) step in SMC is a Metropolis-Hastings kernel.
 
@@ -319,7 +238,7 @@ where `\(\tilde{p}(\boldsymbol{\theta}_{t}~\vert~\boldsymbol{y})\)` is a cheap a
 
   (a) Reject: `\(\boldsymbol{\theta}_{t} \leftarrow \boldsymbol{\theta}_{t-1}\)` with probability `\(1 - \alpha^{(2)}\)`, or
 
-  (b) Accept: `\(\boldsymbol{\theta}_{t} \leftarrow \boldsymbol{\theta}_{t-1}\)` with probability `\(\alpha^{(2)}\)`
+  (b) Accept: `\(\boldsymbol{\theta}_{t} \leftarrow \boldsymbol{\theta}_{t}^\prime\)` with probability `\(\alpha^{(2)}\)`
 
 
 ---
@@ -341,40 +260,7 @@ where `\(\tilde{p}(\boldsymbol{\theta}_{t}~\vert~\boldsymbol{y})\)` is a cheap a
 --
 
 .full-width[.content-box-red[
-**Idea**: Select kernel tuning parameters by optimising computation time with respect to a diversification criterion
-]]
-
----
-
-## Diversification criteria
-
-After resampling, particles are duplicated. One such criterion uses the median of the expected jumping distances [(Salomone et al, 2018)](https://arxiv.org/abs/1805.03924):
-
-`$$D(k,\boldsymbol{\phi}) = \text{median}\left\{\sum_{s=1}^{k} J_{s}(\boldsymbol{\phi}) \right\}$$`
-- `\(k\)` is number of cycles in the mutation step
-
-- `\(J_{s}\)` is expected squared jumping distance (ESJD, [Pasarica and Gelman, 2010](www.jstor.org/stable/24308995))
-
-- Use Mahalanobis distance if dimension &gt; 1
-
-- Helps to ensure a sufficient amount of diversification
-
----
-
-## Optimising computation time
-
-Model for expected computation time of `\(k\)` delayed-acceptance iterations
-
-`$$C(k,\boldsymbol{\phi}) = k(L_{S} +  \alpha^{(1)}(\boldsymbol{\phi})L_{F})$$`
-
-- `\(L_{S}\)`: cost of surrogate likelihood 
-- `\(L_{F}\)`: cost of full likelihood
-- `\(\alpha^{(1)}(\phi)\)`: first stage acceptance for `\(\phi\)`
-
---
-
-.full-width[.content-box-red[
-**Key idea**: Minimise computational costs subject to sufficient particle diversification
+**Idea**: Select kernel tuning parameters by minimising computation time such that a diversification criterion is met
 ]]
 
 ---
@@ -385,71 +271,62 @@ Solve the following approximately
 
 `$$\arg \min_{\boldsymbol{\phi}} C(k,\boldsymbol{\phi})$$`
 `$$\text{such that } D(k,\boldsymbol{\phi}) &gt; d$$`
-
+`$$~$$`
 --
 
-**Procedure**
+**Expected computation time** of `\(k\)` delayed-acceptance cycles
 
-With fixed, finite tuning parameter test set, e.g. `\(\phi \in \{0.1, 0.5, 1.0\}\)` 
+.full-width[.content-box-red[
+`$$C(k,\boldsymbol{\phi}) = k(L_{S} +  \alpha^{(1)}(\boldsymbol{\phi})L_{F})$$`
+]]
+
+- `\(L_{S}\)`: cost of surrogate likelihood 
+- `\(L_{F}\)`: cost of full likelihood
+- `\(\alpha^{(1)}(\phi)\)`: first stage acceptance for `\(\phi\)`
+
+---
+
+## Optimising computation time
+
+Solve the following approximately
+
+`$$\arg \min_{\boldsymbol{\phi}} C(k,\boldsymbol{\phi})$$`
+`$$\text{such that } D(k,\boldsymbol{\phi}) &gt; d$$`
+`$$~$$`
+--
+
+**Diversification criterion**: use median ESJD to determine number of cycles required 
+([Pasarica and Gelman, 2010;](www.jstor.org/stable/24308995) [Salomone et al, 2018](https://arxiv.org/abs/1805.03924)).
+
+.full-width[.content-box-red[
+`$$D(k,\boldsymbol{\phi}) = \text{median}\left\{\sum_{s=1}^{k} J_{s}(\boldsymbol{\phi}) \right\}$$`
+]]
+
+- `\(k\)`: Cycles of DA kernel
+- `\(J_{s}(\boldsymbol{\phi})\)`: ESJD in cycle `\(s\)` with parameter `\(\boldsymbol{\phi}\)`
+
+---
+
+## Procedure in practice 
+
+Fix a finite set of potential parameters, e.g. `\(\phi \in \{0.1, 0.5, 1.0\}\)` 
 
 --
 
 1. Run pilot mutation step to estimate:
 
-    - `\(\hat{L}_{S}\)`, `\(\hat{L}_{F}\)`, `\(\widehat{\alpha^{(1)}}(\phi)\)`:
-    - Estimate minimum `\(\hat{k}_{\phi}\)` using an "ESJD model" for `\(D(k,\boldsymbol{\phi})\)` 
+    - `\(\hat{L}_{S}\)`, `\(\hat{L}_{F}\)`, `\(\widehat{\alpha^{(1)}}(\phi)\)`, `\(\hat{J_{1}}(\phi)\)`
+    - Estimate `\(\hat{k}_{\phi}\)`: the minimum `\(k\)` for diversification using an approximate model of `\(D(k,\phi)\)` 
 --
 
 2. Find `\(\phi^{\star}\)` using estimates from pilot run
 
+    - `\(\phi^{\star} = \arg \min_{\phi} \hat{C}(\hat{k}_{\phi},\phi)\)`
 --
 
-3. Run mutation steps until diversification criterion threshold is met
+3. Continue mutation steps until empirical diversification criterion threshold is met
 
----
-class: list-space
-
-## Models for ESJD 
-
-The pilot run ESJD are used to determine the minimum number of kernel cycles required.
-
-`$$D(k,\boldsymbol{\phi}) = \text{median}\left\{\sum_{s=1}^{k} J_{s}(\boldsymbol{\phi}) \right\}$$`
-
-For each `\(\boldsymbol{\phi} \in \Phi\)` find minimum `\(k\)` such that `\(D(k,\boldsymbol{\phi}) &gt; d\)`.
-
---
-
-**Models for total ESJD**
-
---
-
-- Gamma assumption: `\(\sum_{s=1}^{k} J_{s}(\boldsymbol{\phi}) \sim \text{Gamma}(k\widehat{a_{\boldsymbol{\phi}}},\widehat{b_{\boldsymbol{\phi}}})\)`
-
---
-
-
-- Median approximation: `\(k^{*}_{\boldsymbol{\phi}} = \min\left\{k \in \mathbb{Z}_{+}: k \times \text{median}\{J_{1}(\boldsymbol{\phi})\}\geq d \right\}\)`
-
----
-class: list-space
-
-## Aside: Optimising computation time
-
-Using the same optimisation strategy,
-
-`$$\arg \min_{\boldsymbol{\phi}} C(k,\boldsymbol{\phi})$$`
-`$$\text{such that } D(k,\boldsymbol{\phi}) &gt; d,$$`
-
-in the context of standard Metropolis-Hastings 
-
-$$
-C(k,\boldsymbol{\phi}) = k L_{F}
-$$
-
-Particular choices of `\(D(k,\boldsymbol{\phi})\)` result in similar tuning strategies in the SMC literature:
-
-- Targeting `\(k\)` via acceptance rates [(Drovandi et al, 2011)](https://doi.org/10.1111/j.1541-0420.2010.01410.x)
-- Targeting median ESJD across particles [(Salomone et al, 2018)](https://arxiv.org/abs/1805.03924)
+    - `\(\text{median}\left\{\sum_{s=1}^{k} \hat{J_{s}}(\phi^{\star}) \right\} &gt; d\)`
 
 ---
 class: inverse, center, middle, hide-logo
@@ -545,11 +422,11 @@ class: list-space
 Three strategies used:
 
 1. Delayed-acceptance
-    - Tuned with particles and computation optimisation
+    - Tuned with pilot run of mutation step
 2. Surrogate likelihood calibration
     - Uses history of particles
 3. Surrogate first annealing
-    - Surrogate posterior is intermediate distribution
+    - Surrogate posterior used as intermediate distribution
 
 ---
 
@@ -580,40 +457,43 @@ Run simulation to test optimisation framework
 ---
 class: list-space
 
-## Results: Overview
+## Overview of Results
 
 - DA+T+SFA had the best *computation* time improvements
-   - speeding up the SMC by `\(1.90\times\)` to `\(6.95\times\)` compared to standard SMC. 
+   - speeding up SMC by `\(2.9\times\)` to `\(8.8\times\)` compared to standard SMC. 
+   - better improvements for larger `\(\rho\)`
 
 --
 - DA+T+SFA had the best *efficiency* gains also 
-   - MSE `\(\times\)` SLE: gains of `\(2.20\times\)` to `\(7.71\times\)` 
-   - MSE `\(\times\)` time: gains of `\(1.86\times\)` to `\(8.30\times\)`
+   - SE `\(\times\)` SLE: gains of `\(1.6\times\)` to `\(7.6\times\)`
+   - SE `\(\times\)` time: gains of `\(3.0\times\)` to `\(8.8\times\)`
+   - better improvements for larger `\(\rho\)`
 
 --
-- Neither DA+T or SFA outperformed the other comprehensively
+- "DA+T only" typically did better than "SFA only"
 
 --
-- DA+T+SFA has super-linear performance compared to DA+T or SFA alone
+- DA+T+SFA has super-linear performance compared to "DA+T only" and "SFA only"
 
 ---
 
-## Results: Efficiency
+## Efficiency Results
 
-&lt;img src="index_files/figure-html/s-smc-eff-1.png" width="800px" height="500px" /&gt;
----
-exclude: false
-
-## Results: Surrogate evaluations
-
-&lt;img src="plots/surr-like-evals-2000-2020-02-13.png" width="90%" /&gt;
+&lt;img src="plots/rel-time-efficiency-2000-2020-09-07.png" width="90%" /&gt;
 
 ---
 
+## Posterior Comparisons
 
-## Results: Example posterior comparisons
+&lt;img src="plots/beta-density-2000-1-2021-05-07.png" width="50%" /&gt;
 
-&lt;img src="index_files/figure-html/plot-post-1.png" width="800px" height="500px" /&gt;
+---
+
+## Example on Whittle Likelihood
+
+- The Whittle likelihood is a computationally efficient likelihood approximation for time series models ([Whittle 1953](https://doi.org/10.1007/BF02590998))
+
+- constructed using (discrete) Fourier transforms to the frequency domain
 
 ---
 class: list-space
@@ -647,6 +527,7 @@ class: list-space
 class: middle, center
 
 # Thank you! (And questions)
+
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
@@ -698,30 +579,20 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
 })();
 (function() {
   "use strict"
-  /* Replace <script> tags in slides area to make them executable
-   *
-   * Runs after post-processing of markdown source into slides and replaces only
-   * <script>s on the last slide of continued slides using the .has-continuation
-   * class added by xaringan. Finally, any <script>s in the slides area that
-   * aren't executed are commented out.
-   */
+  // Replace <script> tags in slides area to make them executable
   var scripts = document.querySelectorAll(
-    '.remark-slides-area .remark-slide-container:not(.has-continuation) script'
+    '.remark-slides-area .remark-slide-container script'
   );
   if (!scripts.length) return;
   for (var i = 0; i < scripts.length; i++) {
     var s = document.createElement('script');
     var code = document.createTextNode(scripts[i].textContent);
     s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
     scripts[i].parentElement.replaceChild(s, scripts[i]);
-  }
-  var scriptsNotExecuted = document.querySelectorAll(
-    '.remark-slides-area .remark-slide-container.has-continuation script'
-  );
-  if (!scriptsNotExecuted.length) return;
-  for (var i = 0; i < scriptsNotExecuted.length; i++) {
-    var comment = document.createComment(scriptsNotExecuted[i].outerHTML)
-    scriptsNotExecuted[i].parentElement.replaceChild(comment, scriptsNotExecuted[i])
   }
 })();
 (function() {
