@@ -22,7 +22,7 @@ class: center, middle, inverse, title-slide
 
 class: inverse, center, middle, hide-logo
 
-# How can a surrogate likelihood best be exploited for computational gains in SMC? 
+# How can a surrogate likelihood be exploited for computational gains in SMC? 
 
       
 ---
@@ -80,28 +80,6 @@ The fundamental elements of importance sampling are
 
 ---
 
-## Importance sampling
-
-.content-box-red[
-**Importance sampling**: Draw from an approximate distribution, reweight to preserve the correct posterior expectation]
-
---
-
-Wait! What about the normalising constant?
-
---
-
-`$$w_{i} = \frac{ p(\boldsymbol{\theta}_{i}~\vert~\boldsymbol{y})}{g( \boldsymbol{\theta}_{i})}$$`
-
---
-
-`$$w_{i} \propto W_{i} = \frac{ p(\boldsymbol{y}~\vert~\boldsymbol{\theta}_{i})p(\boldsymbol{\theta}_{i}) }{g( \boldsymbol{\theta}_{i})}$$`
-
-
-Self-normalise to avoid computing the constant: `$$w_{i} = \frac{W_{i}}{\sum_{i=1}^{N} W_{i}}$$`
-
----
-
 
 ## Sequential Monte Carlo
 
@@ -123,7 +101,7 @@ Hard to develop an importance distribution `\(g(\boldsymbol{\theta})\)`!
 
 --
 
-- Draw a sample from starting distribution `\(p_{0}(\boldsymbol{\theta})\)`.
+- Draw a sample from starting distribution `\(p_{0}(\boldsymbol{\theta})\)` then iteratively reweight through sequence of distributions
 
 --
 
@@ -164,9 +142,9 @@ class: inverse, center, middle, hide-logo
 
 ---
 class: list-space
-## Background: Metropolis-Hastings
+## Metropolis-Hastings
 
-One option for the refresh (mutation) step in SMC is a Metropolis-Hastings kernel.
+To refresh (mutation) particles in SMC with a Metropolis-Hastings kernel:
 
 1. Propose new location for particle from proposal distribution
 2. Calculate acceptance rate
@@ -175,7 +153,7 @@ One option for the refresh (mutation) step in SMC is a Metropolis-Hastings kerne
 --
 
 .full-width[.content-box-red[
-**Computational cost**: Likelihood (posterior) evaluation at proposal.
+**Computational cost**: Likelihood (posterior) evaluation at proposal `\(\times\)` number of cycles.
 ]]
 
 ---
@@ -187,7 +165,7 @@ What if `\(p(\boldsymbol{\theta}~\vert~\boldsymbol{y})\)` is expensive to calcul
 
 ---
 
-## Background: Delayed-acceptance
+## Delayed-acceptance
 
 .full-width[.content-box-red[
 - Delayed-acceptance splits the MH algorithm into parts
@@ -207,7 +185,9 @@ What if `\(p(\boldsymbol{\theta}~\vert~\boldsymbol{y})\)` is expensive to calcul
 
 where `\(\tilde{p}(\boldsymbol{\theta}_{t}~\vert~\boldsymbol{y})\)` is a cheap approximation of `\(p(\boldsymbol{\theta}_{t}~\vert~\boldsymbol{y})\)`. 
 
+--
 
+`$$~$$`
 *MH ratio assumes symmetric proposal `\(q(\cdot,\cdot)\)` for simplicity.
 
 ---
@@ -637,13 +617,13 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
 })(document);</script>
 <style>
 .logo {
-  background-image: url(imgs/acems-qut-logo.png);
+  background-image: url(imgs/QUT_SQUARE_RGB_XLGE.png);
   background-size: contain;
   background-repeat: no-repeat;
   position: absolute;
   top: 1em;
   right: 1em;
-  width: 370px;
+  width: 100px;
   height: 100px;
   z-index: 0;
 }

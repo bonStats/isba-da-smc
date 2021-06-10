@@ -20,7 +20,7 @@ output:
 ---
 class: inverse, center, middle, hide-logo
 
-# How can a surrogate likelihood best be exploited for computational gains in SMC? 
+# How can a surrogate likelihood be exploited for computational gains in SMC? 
 
       
 ---
@@ -200,28 +200,6 @@ $$\begin{aligned}\text{Locations: }& \qquad \boldsymbol{\theta}_{i} \sim g(\bold
 
 ---
 
-## Importance sampling
-
-.content-box-red[
-**Importance sampling**: Draw from an approximate distribution, reweight to preserve the correct posterior expectation]
-
---
-
-Wait! What about the normalising constant?
-
---
-
-$$w_{i} = \frac{ p(\boldsymbol{\theta}_{i}~\vert~\boldsymbol{y})}{g( \boldsymbol{\theta}_{i})}$$
-
---
-
-$$w_{i} \propto W_{i} = \frac{ p(\boldsymbol{y}~\vert~\boldsymbol{\theta}_{i})p(\boldsymbol{\theta}_{i}) }{g( \boldsymbol{\theta}_{i})}$$
-
-
-Self-normalise to avoid computing the constant: $$w_{i} = \frac{W_{i}}{\sum_{i=1}^{N} W_{i}}$$
-
----
-
 
 ## Sequential Monte Carlo
 
@@ -243,7 +221,7 @@ $$0 = \gamma_{0} < \gamma_{1} < \cdots < \gamma_{T-1} < \gamma_{T} = 1$$
 
 --
 
-- Draw a sample from starting distribution $p_{0}(\boldsymbol{\theta})$.
+- Draw a sample from starting distribution $p_{0}(\boldsymbol{\theta})$ then iteratively reweight through sequence of distributions
 
 --
 
@@ -286,9 +264,9 @@ class: inverse, center, middle, hide-logo
 
 ---
 class: list-space
-## Background: Metropolis-Hastings
+## Metropolis-Hastings
 
-One option for the refresh (mutation) step in SMC is a Metropolis-Hastings kernel.
+To refresh (mutation) particles in SMC with a Metropolis-Hastings kernel:
 
 1. Propose new location for particle from proposal distribution
 2. Calculate acceptance rate
@@ -297,7 +275,7 @@ One option for the refresh (mutation) step in SMC is a Metropolis-Hastings kerne
 --
 
 .full-width[.content-box-red[
-**Computational cost**: Likelihood (posterior) evaluation at proposal.
+**Computational cost**: Likelihood (posterior) evaluation at proposal $\times$ number of cycles.
 ]]
 
 ---
@@ -311,7 +289,7 @@ knitr::include_graphics("imgs/judy_time_ticking.gif")
 
 ---
 
-## Background: Delayed-acceptance
+## Delayed-acceptance
 
 .full-width[.content-box-red[
 - Delayed-acceptance splits the MH algorithm into parts
@@ -331,7 +309,9 @@ $$\alpha^{(1)} = \min\left(1,\frac{\tilde{p}(\boldsymbol{\theta}_{t}^{\prime}~\v
 
 where $\tilde{p}(\boldsymbol{\theta}_{t}~\vert~\boldsymbol{y})$ is a cheap approximation of $p(\boldsymbol{\theta}_{t}~\vert~\boldsymbol{y})$. 
 
+--
 
+$$~$$
 *MH ratio assumes symmetric proposal $q(\cdot,\cdot)$ for simplicity.
 
 ---
