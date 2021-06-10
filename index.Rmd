@@ -169,7 +169,7 @@ knitr::opts_chunk$set(cache = T)
 2. Tuning delayed-acceptance in SMC
 3. Calibrating surrogate likelihoods in SMC
 4. Surrogate first annealing strategy
-5. Simulation results 
+5. Experiment results
 
 Joint work with **Anthony Lee** (Bristol University) and **Christopher Drovandi** (QUT)
 
@@ -266,16 +266,19 @@ class: inverse, center, middle, hide-logo
 class: list-space
 ## Metropolis-Hastings
 
-To refresh (mutation) particles in SMC with a Metropolis-Hastings kernel:
+To refresh (mutation) particles in SMC with a **Metropolis-Hastings** kernel:
 
 1. Propose new location for particle from proposal distribution
 2. Calculate acceptance rate
-3. Accept/reject proposal
+3. Accept or reject proposal
 
 --
 
 .full-width[.content-box-red[
-**Computational cost**: Likelihood (posterior) evaluation at proposal $\times$ number of cycles.
+**Computational cost per particle** $= L_F \times k$.
+
+- $L_F$, computational cost of evaluating full likelihood
+- $k$, number of cycles
 ]]
 
 ---
@@ -288,60 +291,27 @@ knitr::include_graphics("imgs/judy_time_ticking.gif")
 ```
 
 ---
-
+class: list-space
 ## Delayed-acceptance
 
+To refresh (mutation) particles in SMC with a **delayed-acceptance** kernel:
+
+1. Propose new location for particle from proposal distribution
+2. Calculate 1st stage acceptance rate based on **surrogate** likelihood/posterior
+3. Provisionally accept or reject proposal (1st stage rate)
+
+--
+4. If provisionally accepted, calculate 2nd stage acceptance rate based on **full** likelihood/posterior
+5. Accept or reject proposal (2nd stage rate)
+
+--
+
 .full-width[.content-box-red[
-- Delayed-acceptance splits the MH algorithm into parts
-- Evaluate proposal using a cheap surrogate likelihood (or posterior)
-- Correct for approximation in a second evaluation
+**Expected computational cost per particle** $= (L_{S} +  \alpha^{(1)}L_{F}) \times k$.
+
+- $L_S$, computational cost of evaluating surrogate likelihood
+- $\alpha^{(1)}$, 1st stage acceptance rate
 ]]
-
---
-
-1. **Propose** new location from $\boldsymbol{\theta}_{t-1}$ using $\boldsymbol{\theta}_{t}^{\prime} \sim q(\boldsymbol{\theta}~\vert~\boldsymbol{\theta}_{t-1})$
-    
---
-
-2. Calculate **acceptance probability** (surrogate)* 
-
-$$\alpha^{(1)} = \min\left(1,\frac{\tilde{p}(\boldsymbol{\theta}_{t}^{\prime}~\vert~\boldsymbol{y})}{\tilde{p}(\boldsymbol{\theta}_{t-1}~\vert~\boldsymbol{y})} \right)$$
-
-where $\tilde{p}(\boldsymbol{\theta}_{t}~\vert~\boldsymbol{y})$ is a cheap approximation of $p(\boldsymbol{\theta}_{t}~\vert~\boldsymbol{y})$. 
-
---
-
-$$~$$
-*MH ratio assumes symmetric proposal $q(\cdot,\cdot)$ for simplicity.
-
----
-
-## Background: Delayed-acceptance
-
-1. **Propose** new value...
-
-2. Calculate **acceptance probability** (surrogate)...
-
---
-
-3. **Evaluate** proposal (surrogate)
-
-  (a) Reject: $\boldsymbol{\theta}_{t} \leftarrow \boldsymbol{\theta}_{t-1}$ with probability $1 - \alpha^{(1)}$, and
-
-  (b) Provisionally accept with probability $\alpha^{(1)}$
-
---
-
-4. If provisionally accepted, calculate **acceptance probability** (full) 
-   $$\alpha^{(2)} = \min\left(1, \frac{p(\boldsymbol{\theta}_{t}^{\prime}~\vert~\boldsymbol{y})}{p(\boldsymbol{\theta}_{t-1}~\vert~\boldsymbol{y})} \frac{\tilde{p}(\boldsymbol{\theta}_{t-1}~\vert~\boldsymbol{y})}{\tilde{p}(\boldsymbol{\theta}_{t}^{\prime}~\vert~\boldsymbol{y})} \right)$$
---
-
-5. **Evaluate** proposal (full) 
-
-  (a) Reject: $\boldsymbol{\theta}_{t} \leftarrow \boldsymbol{\theta}_{t-1}$ with probability $1 - \alpha^{(2)}$, or
-
-  (b) Accept: $\boldsymbol{\theta}_{t} \leftarrow \boldsymbol{\theta}_{t}^\prime$ with probability $\alpha^{(2)}$
-
 
 ---
 
